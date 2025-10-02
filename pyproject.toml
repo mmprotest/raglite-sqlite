@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "raglite-sqlite"
+version = "0.1.0"
+description = "Local-first RAG toolkit backed by a single SQLite database"
+readme = "README.md"
+authors = [{ name = "RagLite Contributors" }]
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+dependencies = [
+  "typer[all]>=0.9.0",
+  "rich>=13.7.0",
+  "pydantic>=2.7.0",
+  "beautifulsoup4>=4.12.0",
+  "python-frontmatter>=1.0.0",
+  "PyPDF2>=3.0.0",
+  "python-docx>=1.0.0",
+  "numpy>=1.24.0",
+  "tqdm>=4.66.0",
+  "rapidfuzz>=3.6.0",
+  "sentence-transformers>=2.5.0",
+  "orjson>=3.9.0",
+  "click-spinner>=0.1.10",
+  "sqlite-fts5",
+]
+
+[project.optional-dependencies]
+openai = ["openai>=1.0.0"]
+dev = [
+  "pytest>=8.1.0",
+  "pytest-cov>=4.1.0",
+  "mypy>=1.10.0",
+  "ruff>=0.4.0",
+  "black>=24.4.0",
+  "build>=1.2.1",
+  "twine>=5.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/example/raglite-sqlite"
+Repository = "https://github.com/example/raglite-sqlite"
+
+[project.scripts]
+raglite = "raglite_sqlite.cli:app"
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "I", "B"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["raglite_sqlite"]
+
+[tool.mypy]
+pytorch = false
+python_version = "3.10"
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+strict = true
+plugins = []

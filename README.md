@@ -216,12 +216,6 @@ The vector store wrapper exposes RagLite search semantics to LlamaIndex while le
 
 RagLite does not perform any network calls by default. Remote embedding backends (such as OpenAI) are opt-in and require explicit configuration via environment variables.
 
-## Roadmap
-
-- Optional REST server for multi-user access.
-- Support for additional document formats and OCR.
-- Pluggable reranking models.
-
 ## License
 
 MIT License. See [LICENSE](LICENSE).

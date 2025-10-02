@@ -8,7 +8,8 @@ Local-first Retrieval-Augmented Generation (RAG) toolkit built entirely on top o
 - **Deterministic and offline** – default embedding model is local; no network calls unless explicitly configured.
 - **Hybrid retrieval** – combines BM25 via FTS5 with cosine similarity over stored vectors.
 - **Python and CLI** – flexible API plus a friendly Typer-based CLI for scripting.
-- **Extensible** – pluggable parsers, chunkers, embedding backends, and adapters for LangChain / LlamaIndex.
+- **Extensible** – pluggable parsers, chunkers, embedding backends, rerankers, and adapters for LangChain / LlamaIndex.
+- **Multi-user ready** – optional FastAPI server turns the SQLite database into a shared retrieval service.
 
 ## Installation
 
@@ -45,6 +46,10 @@ raglite query "example text" --db knowledge.db -k 8 --hybrid 0.6
   ```bash
   raglite query "How do I deploy?" --db knowledge.db -k 5 --hybrid 0.7
   ```
+- Apply a cross-encoder reranker at query time:
+  ```bash
+  raglite query "release checklist" --db knowledge.db --reranker cross-encoder --reranker-option model_name=cross-encoder/ms-marco-MiniLM-L-6-v2
+  ```
 - Filter by tag or doc id:
   ```bash
   raglite query "release checklist" --db knowledge.db --filter tag=internal --filter doc_id=release-notes
@@ -61,6 +66,32 @@ raglite query "example text" --db knowledge.db -k 8 --hybrid 0.6
   ```bash
   raglite vacuum --db knowledge.db
   ```
+- Serve a REST API for multi-user access (requires `pip install raglite-sqlite[server]`):
+  ```bash
+  raglite serve --db knowledge.db --host 0.0.0.0 --port 8080
+  ```
+
+## REST API
+
+RagLite can expose a FastAPI-powered REST server for shared deployments. Install the optional extras first:
+
+```bash
+pip install raglite-sqlite[server]
+```
+
+Then launch the server with `raglite serve`. Key endpoints:
+
+- `GET /health` – basic health check.
+- `GET /stats` – retrieve database statistics.
+- `POST /index` – index new files on disk.
+- `POST /query` – perform hybrid search with optional reranking.
+- `POST /delete` – remove a document by `doc_id`.
+
+All endpoints operate directly on the shared SQLite database, making it easy to expose retrieval to multiple users without extra infrastructure.
+
+## Document formats & OCR
+
+Beyond plain text and Markdown, RagLite understands PDF, HTML, DOCX, CSV, JSON, PPTX, and image files. Image ingestion uses OCR via `pytesseract`/`Pillow`—install them with `pip install raglite-sqlite[ocr]`. Custom parser options can be passed via `RagLite.index(..., parser_opts={...})` or the REST API.
 
 ## Python API
 

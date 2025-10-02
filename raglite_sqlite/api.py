@@ -10,11 +10,15 @@ from .embeddings.base import EmbeddingBackend
 from .parsers.csv import CSVParser
 from .parsers.docx import DocxParser
 from .parsers.html import HTMLParser
+from .parsers.image import ImageParser
+from .parsers.json import JSONParser
 from .parsers.md import MarkdownParser
 from .parsers.pdf import PDFParser
+from .parsers.pptx import PptxParser
 from .parsers.txt import TextParser
 from .search import assemble_results, bm25_search, hybrid_fuse, vector_search
 from .typing import SearchResult
+from .rerank import Reranker, get_reranker
 from .utils import detect_mime, iter_files, loads_json, now_ts, normalize_text, sha256_file, sha256_text
 
 PARSER_REGISTRY = {
@@ -24,6 +28,11 @@ PARSER_REGISTRY = {
     "application/pdf": PDFParser(),
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document": DocxParser(),
     "text/csv": CSVParser(),
+    "application/json": JSONParser(),
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation": PptxParser(),
+    "image/png": ImageParser(),
+    "image/jpeg": ImageParser(),
+    "image/tiff": ImageParser(),
 }
 
 
@@ -160,6 +169,8 @@ class RagLite:
         embedding_backend: EmbeddingBackend | None = None,
         max_per_doc: int = 3,
         with_snippets: bool = True,
+        reranker: Reranker | str | None = None,
+        reranker_options: dict[str, object] | None = None,
     ) -> List[SearchResult]:
         norm_query = normalize_text(query)
         lexical = bm25_search(self.db, norm_query, k, filters)
@@ -168,7 +179,20 @@ class RagLite:
         if backend is not None:
             semantic = vector_search(self.db, backend, norm_query, model_name, k)
         fused = hybrid_fuse(lexical, semantic, hybrid_weight, k)
-        return assemble_results(self.db, fused, k, with_snippets=with_snippets, max_per_doc=max_per_doc)
+        results = assemble_results(
+            self.db, fused, k, with_snippets=with_snippets, max_per_doc=max_per_doc
+        )
+        reranker_instance: Reranker | None
+        if isinstance(reranker, str):
+            try:
+                reranker_instance = get_reranker(reranker, **(reranker_options or {}))
+            except KeyError as exc:
+                raise ValueError(f"Unknown reranker '{reranker}'") from exc
+        else:
+            reranker_instance = reranker
+        if reranker_instance is not None:
+            results = list(reranker_instance.rerank(query, results))
+        return results
 
     def delete(self, doc_id: str) -> None:
         self.db.delete_document(doc_id)

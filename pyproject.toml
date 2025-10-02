@@ -29,6 +29,14 @@ dependencies = [
 
 [project.optional-dependencies]
 openai = ["openai>=1.0.0"]
+ocr = [
+  "pytesseract>=0.3.10",
+  "Pillow>=10.0.0",
+]
+server = [
+  "fastapi>=0.110.0",
+  "uvicorn[standard]>=0.29.0",
+]
 dev = [
   "pytest>=8.1.0",
   "pytest-cov>=4.1.0",

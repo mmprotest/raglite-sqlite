@@ -29,6 +29,7 @@ class SearchResult(TypedDict, total=False):
     tags: Optional[str]
     bm25_score: float
     vector_score: float
+    rerank_score: float
 
 
 class Parser(Protocol):

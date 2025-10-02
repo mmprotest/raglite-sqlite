@@ -63,6 +63,15 @@ def detect_mime(path: Path) -> str:
         ".pdf": "application/pdf",
         ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         ".csv": "text/csv",
+        ".json": "application/json",
+        ".yml": "application/x-yaml",
+        ".yaml": "application/x-yaml",
+        ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".tif": "image/tiff",
+        ".tiff": "image/tiff",
     }.get(ext, "application/octet-stream")
 
 

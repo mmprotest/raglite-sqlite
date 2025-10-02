@@ -68,6 +68,10 @@ def query(
     hybrid: float = typer.Option(0.6, min=0.0, max=1.0, help="Hybrid weight"),
     max_per_doc: int = typer.Option(3, help="Max results per document"),
     filters: Optional[list[str]] = typer.Option(None, "--filter", help="Filter key=value"),
+    reranker: Optional[str] = typer.Option(None, help="Name of reranker to apply"),
+    reranker_option: Optional[list[str]] = typer.Option(
+        None, "--reranker-option", help="Reranker option key=value"
+    ),
 ) -> None:
     rag = get_rag(db)
     filter_dict: dict[str, str] | None = None
@@ -78,7 +82,26 @@ def query(
                 raise typer.BadParameter("Filters must be in key=value format")
             key, value = item.split("=", 1)
             filter_dict[key] = value
-    results = rag.search(text, k=k, hybrid_weight=hybrid, max_per_doc=max_per_doc, filters=filter_dict)
+    reranker_opts: dict[str, object] | None = None
+    if reranker_option:
+        reranker_opts = {}
+        for item in reranker_option:
+            if "=" not in item:
+                raise typer.BadParameter("Reranker options must be in key=value format")
+            key, value = item.split("=", 1)
+            reranker_opts[key] = value
+    try:
+        results = rag.search(
+            text,
+            k=k,
+            hybrid_weight=hybrid,
+            max_per_doc=max_per_doc,
+            filters=filter_dict,
+            reranker=reranker,
+            reranker_options=reranker_opts,
+        )
+    except ValueError as exc:
+        raise typer.BadParameter(str(exc)) from exc
     table = Table(show_header=True, header_style="bold magenta")
     table.add_column("Score", justify="right")
     table.add_column("Doc ID")
@@ -119,3 +142,29 @@ def vacuum(db: Path = typer.Option(..., help="Database path")) -> None:
     rag = get_rag(db)
     rag.vacuum()
     console.print("VACUUM completed")
+
+
+@app.command()
+def serve(
+    db: Path = typer.Option(..., help="Database path"),
+    host: str = typer.Option("127.0.0.1", help="Host to bind"),
+    port: int = typer.Option(8000, help="Port to bind"),
+    reload: bool = typer.Option(False, help="Enable auto-reload"),
+) -> None:
+    """Run the optional REST server."""
+
+    try:
+        from .server import create_app
+    except ImportError as exc:  # pragma: no cover - optional dependency missing
+        raise typer.BadParameter(
+            "The REST server requires FastAPI. Install raglite-sqlite[server]."
+        ) from exc
+    try:
+        import uvicorn
+    except ImportError as exc:  # pragma: no cover - optional dependency missing
+        raise typer.BadParameter(
+            "Running the REST server requires uvicorn. Install raglite-sqlite[server]."
+        ) from exc
+
+    app_instance = create_app(str(db))
+    uvicorn.run(app_instance, host=host, port=port, reload=reload)

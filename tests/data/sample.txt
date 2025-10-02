@@ -1,0 +1,2 @@
+This is a sample text document.
+It contains a few lines about testing RagLite.

@@ -80,18 +80,20 @@ def now_ts() -> int:
 
 
 def iter_files(paths: Sequence[str], recurse: bool = True, glob: str | None = None) -> list[Path]:
-    candidates: list[Path] = []
+    candidates: dict[Path, Path] = {}
     for input_path in paths:
         path = Path(input_path)
         if path.is_dir():
-            pattern = glob or "**/*" if recurse else "*"
-            for child in path.glob(pattern):
+            if glob:
+                iterator = path.rglob(glob) if recurse else path.glob(glob)
+            else:
+                iterator = path.rglob("*") if recurse else path.glob("*")
+            for child in iterator:
                 if child.is_file():
-                    candidates.append(child)
+                    candidates.setdefault(child.resolve(), child)
         elif path.is_file():
-            candidates.append(path)
-    unique = {p.resolve(): p for p in candidates}
-    return list(unique.values())
+            candidates.setdefault(path.resolve(), path)
+    return list(candidates.values())
 
 
 def dumps_json(data: object) -> str:

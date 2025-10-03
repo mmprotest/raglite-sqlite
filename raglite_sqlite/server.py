@@ -12,9 +12,9 @@ from .rerank import Reranker, get_reranker
 
 
 def _default_backend() -> EmbeddingBackend:
-    from .embeddings.sentence_transformers_backend import SentenceTransformersBackend
+    from .embeddings.hash_backend import HashingBackend
 
-    return SentenceTransformersBackend()
+    return HashingBackend()
 
 
 class QueryPayload(BaseModel):

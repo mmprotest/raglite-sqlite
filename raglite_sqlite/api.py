@@ -7,6 +7,7 @@ from typing import Any, Dict, Iterable, List, Sequence
 from .chunking import chunk_blocks
 from .db import Database
 from .embeddings.base import EmbeddingBackend
+from .embeddings.hash_backend import HashingBackend
 from .parsers.csv import CSVParser
 from .parsers.docx import DocxParser
 from .parsers.html import HTMLParser
@@ -37,9 +38,7 @@ PARSER_REGISTRY = {
 
 
 def _default_backend() -> EmbeddingBackend:
-    from .embeddings.sentence_transformers_backend import SentenceTransformersBackend
-
-    return SentenceTransformersBackend()
+    return HashingBackend()
 
 
 class RagLite:

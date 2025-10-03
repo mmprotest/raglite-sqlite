@@ -17,10 +17,24 @@ def get_rag(db: Path) -> RagLite:
     return RagLite(str(db))
 
 
-def get_backend(model: Optional[str]):
-    from .embeddings.sentence_transformers_backend import SentenceTransformersBackend
+def get_backend(backend: str, model: Optional[str]):
+    backend_name = (backend or "hash").lower()
+    if backend_name == "hash":
+        from .embeddings.hash_backend import HashingBackend
 
-    return SentenceTransformersBackend(model_name=model or "sentence-transformers/all-MiniLM-L6-v2")
+        return HashingBackend()
+    if backend_name in {"sentence-transformers", "st"}:
+        try:
+            from .embeddings.sentence_transformers_backend import SentenceTransformersBackend
+        except ImportError as exc:  # pragma: no cover - optional dependency missing
+            raise typer.BadParameter(
+                "Sentence Transformers backend requires raglite-sqlite[embeddings]"
+            ) from exc
+
+        return SentenceTransformersBackend(
+            model_name=model or "sentence-transformers/all-MiniLM-L6-v2"
+        )
+    raise typer.BadParameter(f"Unknown embedding backend '{backend}'")
 
 
 @app.command()
@@ -35,6 +49,7 @@ def index(
     path: Path = typer.Argument(..., exists=True, file_okay=True, dir_okay=True),
     db: Path = typer.Option(..., help="Database path"),
     tags: Optional[str] = typer.Option(None, help="Comma-separated tags"),
+    backend: str = typer.Option("hash", help="Embedding backend to use (hash or sentence-transformers)"),
     model: Optional[str] = typer.Option(None, help="Embedding model name"),
     chunk_size: int = typer.Option(512, help="Chunk size in tokens"),
     overlap: int = typer.Option(64, help="Chunk overlap"),
@@ -42,14 +57,14 @@ def index(
     recursive: bool = typer.Option(True, help="Recurse into directories"),
     skip_unchanged: bool = typer.Option(True, help="Skip unchanged files"),
 ) -> None:
-    backend = get_backend(model)
+    backend_impl = get_backend(backend, model)
     rag = get_rag(db)
     result = rag.index(
         [str(path)],
         tags=tags,
         chunk_size_tokens=chunk_size,
         chunk_overlap_tokens=overlap,
-        embedding_backend=backend,
+        embedding_backend=backend_impl,
         model_name=model,
         glob=glob,
         recurse=recursive,

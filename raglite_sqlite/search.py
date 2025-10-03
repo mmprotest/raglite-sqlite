@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import heapq
 import math
-from typing import Dict, Iterable, List, Tuple
+from typing import Dict, Iterable, List, Sequence, Tuple
 
-from .db import Database, cosine_search
+from .db import Database
 from .embeddings.base import EmbeddingBackend
 from .typing import SearchResult
 from .utils import normalize_text
@@ -46,13 +47,33 @@ def vector_search(
     model_name: str | None,
     k: int,
 ) -> list[tuple[str, float]]:
-    matrix, chunk_ids = db.get_all_vectors(model_name=model_name)
-    if not matrix:
-        return []
     query_vectors = backend.embed_texts([query], model_name=model_name)
+    if not query_vectors:
+        return []
     query_vec = list(query_vectors[0])
-    results = cosine_search(matrix, query_vec, top_k=min(len(chunk_ids), max(k * 5, 10)))
-    return [(chunk_ids[idx], score) for idx, score in results]
+
+    def norm(vec: Sequence[float]) -> float:
+        return math.sqrt(sum(value * value for value in vec))
+
+    query_norm = norm(query_vec)
+    if math.isclose(query_norm, 0.0):
+        return []
+
+    limit = max(k * 5, 10)
+    heap: list[tuple[float, str]] = []
+    for chunk_id, vector in db.iter_vectors(model_name=model_name):
+        row_norm = norm(vector)
+        if math.isclose(row_norm, 0.0):
+            score = 0.0
+        else:
+            score = sum(a * b for a, b in zip(query_vec, vector)) / (row_norm * query_norm)
+        if len(heap) < limit:
+            heapq.heappush(heap, (score, chunk_id))
+            continue
+        if score > heap[0][0]:
+            heapq.heapreplace(heap, (score, chunk_id))
+    heap.sort(reverse=True)
+    return [(chunk_id, score) for score, chunk_id in heap]
 
 
 def hybrid_fuse(

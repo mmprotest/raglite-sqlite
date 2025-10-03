@@ -23,7 +23,7 @@ def test_cli_flow(tmp_path: Path, monkeypatch) -> None:
     # monkeypatch backend to avoid heavy model
     dummy = DummyBackend(dim=16)
 
-    monkeypatch.setattr("raglite_sqlite.cli.get_backend", lambda model: dummy)
+    monkeypatch.setattr("raglite_sqlite.cli.get_backend", lambda backend, model: dummy)
 
     data_dir = Path(__file__).parent / "data"
     result = runner.invoke(

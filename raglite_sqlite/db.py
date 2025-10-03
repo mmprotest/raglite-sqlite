@@ -3,7 +3,7 @@ from __future__ import annotations
 import sqlite3
 from array import array
 from pathlib import Path
-from typing import Iterable, List, Optional, Sequence
+from typing import Iterable, Iterator, List, Optional, Sequence
 
 from .utils import dumps_json, ensure_directory, loads_json
 
@@ -185,6 +185,19 @@ class Database:
             vectors.append(list(data))
             chunk_ids.append(row["chunk_id"])
         return vectors, chunk_ids
+
+    def iter_vectors(self, model_name: str | None = None) -> Iterator[tuple[str, list[float]]]:
+        if model_name:
+            cur = self.conn.execute(
+                "SELECT chunk_id, dim, dtype, vec FROM vectors WHERE model_name = ?",
+                (model_name,),
+            )
+        else:
+            cur = self.conn.execute("SELECT chunk_id, dim, dtype, vec FROM vectors")
+        for row in cur:
+            data = array("f")
+            data.frombytes(row["vec"])
+            yield row["chunk_id"], list(data)
 
     def get_embedding_cache(self, content_sha: str, model_name: str) -> Optional[list[float]]:
         cur = self.conn.execute(

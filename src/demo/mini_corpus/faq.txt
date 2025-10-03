@@ -1,0 +1,5 @@
+Frequently Asked Questions about Raglite
+=======================================
+
+Q: How do I run the quick start guide?
+A: Use raglite init-db, raglite ingest, and raglite query.

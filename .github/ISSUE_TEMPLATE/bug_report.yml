@@ -1,0 +1,19 @@
+name: Bug report
+about: Report a bug in raglite
+labels: bug
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: raglite version
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce

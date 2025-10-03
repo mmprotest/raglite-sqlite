@@ -1,0 +1,8 @@
+How to schedule Raglite backups
+-------------------------------
+
+1. Create a cron entry that runs `raglite export --db ~/data/raglite.db --out ~/backups/$(date +%Y%m%d).zip`.
+2. Enable WAL mode before exporting to keep readers online: `raglite pragma --db ~/data/raglite.db --set journal_mode=WAL`.
+3. Copy the generated archive to an offline disk once per week.
+
+Backups remain compact because Raglite stores content inside a single SQLite file.

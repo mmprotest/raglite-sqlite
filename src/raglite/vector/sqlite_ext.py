@@ -9,7 +9,6 @@ from typing import Iterable, List, Optional
 from .python_fallback import PythonFallbackBackend
 from .types import Candidate
 
-
 EXTENSION_NAMES = ["sqlite_vec", "vec0", "sqlite_vss"]
 
 
@@ -49,7 +48,11 @@ class SQLiteExtensionBackend:
         try:
             cur = conn.execute(
                 "SELECT chunk_id, score FROM embedding_search(?, ?) ORDER BY score DESC LIMIT ?",
-                (getattr(query_vector, "tobytes", lambda: bytes(query_vector))(), len(query_vector), top_n),
+                (
+                    getattr(query_vector, "tobytes", lambda: bytes(query_vector))(),
+                    len(query_vector),
+                    top_n,
+                ),
             )
             rows = cur.fetchall()
             if rows:

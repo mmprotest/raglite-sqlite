@@ -1,0 +1,26 @@
+{"query": "create a status dashboard", "relevant_substring": "select the \"Service Health\" template"}
+{"query": "dashboard live preview toggle", "relevant_substring": "toggle \"Live Preview\""}
+{"query": "schedule raglite backups", "relevant_substring": "Create a cron entry"}
+{"query": "enabling wal prior to exports", "relevant_substring": "Enable WAL mode before exporting"}
+{"query": "tune hybrid alpha", "relevant_substring": "Run `raglite query --alpha 0.6`"}
+{"query": "alpha setting for conversational questions", "relevant_substring": "Decrease to 0.3"}
+{"query": "installation admin rights", "relevant_substring": "No. Raglite ships as pure Python"}
+{"query": "air-gapped embeddings", "relevant_substring": "Use `--embed-model debug`"}
+{"query": "run without gpus", "relevant_substring": "All pipelines run on CPU"}
+{"query": "documents table metadata", "relevant_substring": "Inside the `documents` table"}
+{"query": "chunk tagging metadata field", "relevant_substring": "Each chunk row has a JSON column"}
+{"query": "network drive wal file", "relevant_substring": "copy the `.db` and `-wal` files together"}
+{"query": "search returning empties", "relevant_substring": "Verify the ingest step ran"}
+{"query": "vector cache slow first run", "relevant_substring": "vector cache builds the first time"}
+{"query": "reset index", "relevant_substring": "Delete the SQLite file"}
+{"query": "local-first raglite", "relevant_substring": "Raglite keeps retrieval pipelines"}
+{"query": "hybrid ranking blends", "relevant_substring": "Hybrid ranking blends BM25"}
+{"query": "debug embedding hashes tokens", "relevant_substring": "hashes tokens for speed"}
+{"query": "sentence transformer smoother similarity", "relevant_substring": "plug in a sentence-transformer"}
+{"query": "backup strategy nightly exports", "relevant_substring": "snapshot production data"}
+{"query": "storing db wal partner", "relevant_substring": "Store both the `.db` file and its `.db-wal` partner"}
+{"query": "raglite console query builder", "relevant_substring": "A query builder that exposes alpha"}
+{"query": "offline installers for windows", "relevant_substring": "Offline installers for Windows"}
+{"query": "replicating indexes synchronization service", "relevant_substring": "watches the `.db` and `.db-wal` files"}
+{"query": "newest file prevails", "relevant_substring": "latest file wins"}
+{"query": "self-test command release notes", "relevant_substring": "Added a self-test command"}

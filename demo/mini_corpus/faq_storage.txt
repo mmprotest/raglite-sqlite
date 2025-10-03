@@ -1,0 +1,11 @@
+FAQ: Storage layout
+-------------------
+
+Q: Where does Raglite keep metadata?
+A: Inside the `documents` table. Paths, titles, and MIME types stay normalized.
+
+Q: How do I track chunk tags?
+A: Each chunk row has a JSON column. Use `raglite add-tags` to patch keys atomically.
+
+Q: Can I use network drives?
+A: Yes, but enable WAL mode and copy the `.db` and `-wal` files together when backing up.

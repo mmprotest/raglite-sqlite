@@ -4,11 +4,10 @@ from __future__ import annotations
 
 import mimetypes
 import os
+import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterator, List, Sequence, Tuple
-
-import sqlite3
 
 from . import chunk as chunk_utils
 from .config import RagliteConfig
@@ -16,26 +15,26 @@ from .db import apply_migrations, connect
 from .embed import get_embedding_store
 
 try:
-    from readability import Document  # type: ignore
+    from readability import Document
 except Exception:  # pragma: no cover - optional dependency
-    Document = None  # type: ignore
+    Document = None
 
 try:
-    from bs4 import BeautifulSoup  # type: ignore
+    from bs4 import BeautifulSoup
 except Exception:  # pragma: no cover - optional dependency
-    BeautifulSoup = None  # type: ignore
+    BeautifulSoup = None
 
 try:
-    from pypdf import PdfReader  # type: ignore
+    from pypdf import PdfReader
 except Exception:  # pragma: no cover - optional dependency
-    PdfReader = None  # type: ignore
+    PdfReader = None
 
 try:  # optional OCR
-    import pytesseract  # type: ignore
-    from PIL import Image  # type: ignore
+    import pytesseract
+    from PIL import Image
 except Exception:  # pragma: no cover - optional dependency
-    pytesseract = None  # type: ignore
-    Image = None  # type: ignore
+    pytesseract = None
+    Image = None
 
 
 @dataclass
@@ -103,7 +102,7 @@ def read_pdf_file(path: Path, *, ocr: bool = False) -> str:
                 images = []
             for image in images:
                 try:
-                    img = Image.open(image.data)  # type: ignore[arg-type]
+                    img = Image.open(image.data)
                 except Exception:  # pragma: no cover
                     continue
                 texts.append(pytesseract.image_to_string(img))
@@ -146,7 +145,9 @@ def ingest_path(
             total_chunks += len(chunks)
             embeddings = embedding_store.embed_many([c.text for c in chunks])
             total_embeddings += len(embeddings)
-            insert_embeddings(conn, chunks, embeddings, embedding_store.model_name, embedding_store.dimension)
+            insert_embeddings(
+                conn, chunks, embeddings, embedding_store.model_name, embedding_store.dimension
+            )
     conn.close()
     return IngestResult(total_docs, total_chunks, total_embeddings)
 
@@ -171,10 +172,14 @@ def insert_document(conn: sqlite3.Connection, path: Path, mime: str) -> int:
         "INSERT INTO documents(path, title, mime) VALUES (?, ?, ?)",
         (str(path), path.stem, mime),
     )
-    return int(cur.lastrowid)
+    row_id = cur.lastrowid
+    assert row_id is not None
+    return int(row_id)
 
 
-def insert_chunks(conn: sqlite3.Connection, document_id: int, chunk_texts: Sequence[str]) -> List[IngestedChunk]:
+def insert_chunks(
+    conn: sqlite3.Connection, document_id: int, chunk_texts: Sequence[str]
+) -> List[IngestedChunk]:
     chunks: List[IngestedChunk] = []
     for idx, text in enumerate(chunk_texts):
         tokens = chunk_utils.estimate_tokens(text)
@@ -182,7 +187,9 @@ def insert_chunks(conn: sqlite3.Connection, document_id: int, chunk_texts: Seque
             "INSERT INTO chunks(document_id, chunk_idx, text, tokens) VALUES (?, ?, ?, ?)",
             (document_id, idx, text, tokens),
         )
-        chunk_id = int(cur.lastrowid)
+        chunk_row_id = cur.lastrowid
+        assert chunk_row_id is not None
+        chunk_id = int(chunk_row_id)
         chunks.append(IngestedChunk(chunk_id, document_id, idx, text, tokens))
     return chunks
 
@@ -194,7 +201,7 @@ def insert_embeddings(
     model: str,
     dim: int,
 ) -> None:
-    for chunk, vector in zip(chunks, vectors):
+    for chunk, vector in zip(chunks, vectors, strict=False):
         conn.execute(
             "INSERT INTO embeddings(chunk_id, model, dim, embedding) VALUES (?, ?, ?, ?)",
             (chunk.id, model, dim, vector),

@@ -18,7 +18,9 @@ class RagliteRetriever(BaseRetriever):
         results = self.api.query(query, top_k=5)
         return [Document(page_content=r.text, metadata=r.metadata) for r in results]
 
-    async def _aget_relevant_documents(self, query: str) -> List[Document]:  # pragma: no cover - async wrapper
+    async def _aget_relevant_documents(
+        self, query: str
+    ) -> List[Document]:  # pragma: no cover - async wrapper
         return self._get_relevant_documents(query)
 
 

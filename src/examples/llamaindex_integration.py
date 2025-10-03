@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, List
+from typing import List
 
 from llama_index.core.schema import TextNode
 from llama_index.core.vector_stores.types import VectorStore
@@ -25,7 +25,9 @@ class RagliteVectorStore(VectorStore):
             ids.append(node.node_id)
         return ids
 
-    def query(self, query: str, top_k: int = 5) -> List[TextNode]:  # pragma: no cover - integration shim
+    def query(
+        self, query: str, top_k: int = 5
+    ) -> List[TextNode]:  # pragma: no cover - integration shim
         results = self.api.query(query, top_k=top_k)
         return [TextNode(text=r.text, id_=str(r.chunk_id), metadata=r.metadata) for r in results]
 

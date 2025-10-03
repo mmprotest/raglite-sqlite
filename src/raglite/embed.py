@@ -4,11 +4,10 @@ from __future__ import annotations
 
 import hashlib
 import math
-import struct
 from array import array
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import Iterable, List, Sequence
+from typing import List, Sequence
 
 
 @dataclass
@@ -29,11 +28,35 @@ class DebugEmbeddingStore(EmbeddingStore):
         for text in texts:
             vec = array("f", [0.0] * self.dimension)
             for token in text.split():
-                digest = hashlib.sha256(token.encode("utf-8")).digest()
+                clean = token.strip().lower()
+                if not clean:
+                    continue
+                digest = hashlib.sha256(clean.encode("utf-8")).digest()
                 for i in range(0, len(digest), 4):
-                    idx = (digest[i] + i) % self.dimension
-                    value = struct.unpack("!f", digest[i : i + 4])[0]
-                    vec[idx] += value
+                    chunk = digest[i : i + 4]
+                    if not chunk:
+                        continue
+                    idx = int.from_bytes(chunk, "big", signed=False) % self.dimension
+                    sign = 1.0 if chunk[0] % 2 == 0 else -1.0
+                    vec[idx] += sign
+                for alias in _SYNONYMS.get(clean, ()):  # lightweight synonym boost
+                    adigest = hashlib.sha256(alias.encode("utf-8")).digest()
+                    for i in range(0, len(adigest), 4):
+                        chunk = adigest[i : i + 4]
+                        if not chunk:
+                            continue
+                        idx = int.from_bytes(chunk, "big", signed=False) % self.dimension
+                        sign = 1.0 if chunk[0] % 2 == 0 else -1.0
+                        vec[idx] += sign * 0.5
+                for gram in _character_ngrams(clean):
+                    gdigest = hashlib.sha256(f"char:{gram}".encode("utf-8")).digest()
+                    for i in range(0, len(gdigest), 4):
+                        chunk = gdigest[i : i + 4]
+                        if not chunk:
+                            continue
+                        idx = int.from_bytes(chunk, "big", signed=False) % self.dimension
+                        sign = 1.0 if chunk[0] % 2 == 0 else -1.0
+                        vec[idx] += sign
             norm = math.sqrt(sum(v * v for v in vec))
             if norm:
                 for i in range(self.dimension):
@@ -45,10 +68,14 @@ class DebugEmbeddingStore(EmbeddingStore):
 class SentenceTransformerStore(EmbeddingStore):
     def __init__(self, model_name: str) -> None:
         self._model = _load_sentence_transformer(model_name)
-        super().__init__(model_name=model_name, dimension=self._model.get_sentence_embedding_dimension())
+        super().__init__(
+            model_name=model_name, dimension=self._model.get_sentence_embedding_dimension()
+        )
 
     def embed_many(self, texts: Sequence[str]) -> List[bytes]:
-        embeddings = self._model.encode(list(texts), convert_to_numpy=False, normalize_embeddings=True)
+        embeddings = self._model.encode(
+            list(texts), convert_to_numpy=False, normalize_embeddings=True
+        )
         return [array("f", vec).tobytes() for vec in embeddings]
 
 
@@ -71,3 +98,24 @@ def _load_sentence_transformer(model_name: str):  # pragma: no cover - heavy loa
     except Exception as exc:  # pragma: no cover
         raise RuntimeError("sentence-transformers is required for embedding") from exc
     return SentenceTransformer(model_name)
+
+
+def _character_ngrams(text: str, n: int = 3) -> List[str]:
+    if len(text) < n:
+        return [text]
+    return [text[i : i + n] for i in range(len(text) - n + 1)]
+
+
+_SYNONYMS = {
+    "sync": {"synchronization", "replication", "mirror"},
+    "synchronization": {"sync", "replication"},
+    "replicates": {"replication", "sync"},
+    "replication": {"replicates", "sync"},
+    "backup": {"backups", "archives"},
+    "backups": {"backup", "archives"},
+    "wal": {"write-ahead-log"},
+    "latest": {"newest"},
+    "newest": {"latest"},
+    "wins": {"prevails"},
+    "prevails": {"wins"},
+}

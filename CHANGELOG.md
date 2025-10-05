@@ -10,4 +10,4 @@
 - Documented architecture, limitations, and quickstart workflow with new README badges.
 
 ## 0.1.0 - 2024-05-01
-- Initial release of raglite with SQLite-backed RAG pipeline, Typer CLI, FastAPI server, and demo corpus.
+- Initial release of raglite-sqlite with SQLite-backed RAG pipeline, Typer CLI, FastAPI server, and demo corpus.

@@ -170,7 +170,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if rerank_available():
         metrics.append(evaluate_variant(api, cases, alpha=args.alpha, rerank=True))
     else:
-        print("(Hybrid+Rerank skipped: install raglite[rerank] to enable)")
+        print("(Hybrid+Rerank skipped: install raglite-sqlite[rerank] to enable)")
 
     print_table(metrics)
     if tmp_dir is not None:

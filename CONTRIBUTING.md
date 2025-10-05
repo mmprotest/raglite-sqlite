@@ -1,6 +1,6 @@
-# Contributing to raglite
+# Contributing to raglite-sqlite
 
-Thank you for helping improve raglite! The project aims to provide a practical local-first RAG stack powered by SQLite.
+Thank you for helping improve raglite-sqlite! The project aims to provide a practical local-first RAG stack powered by SQLite.
 
 ## Getting started
 

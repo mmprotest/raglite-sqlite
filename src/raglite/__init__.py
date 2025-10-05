@@ -6,7 +6,7 @@ from .api import RagliteAPI, add_tags, index_corpus, init_db, query, stats
 from .config import RagliteConfig
 
 try:
-    __version__ = importlib_metadata.version("raglite")
+    __version__ = importlib_metadata.version("raglite-sqlite")
 except importlib_metadata.PackageNotFoundError:  # pragma: no cover - fallback for dev installs
     __version__ = "0.0.0"
 

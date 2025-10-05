@@ -10,7 +10,7 @@ try:
     from fastapi import FastAPI, HTTPException
     from pydantic import BaseModel
 except Exception as exc:  # pragma: no cover - optional dependency
-    raise RuntimeError("Install raglite[server] to use the FastAPI app") from exc
+    raise RuntimeError("Install raglite-sqlite[server] to use the FastAPI app") from exc
 
 from ..api import RagliteAPI
 from ..config import RagliteConfig

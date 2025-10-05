@@ -1,9 +1,11 @@
-# raglite-SQLite
+
+# raglite-sqlite
 
 [![CI](https://github.com/mmprotest/raglite-sqlite/actions/workflows/ci.yml/badge.svg)](https://github.com/mmprotest/raglite-sqlite/actions/workflows/ci.yml)
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python: 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)
-[![PyPI](https://img.shields.io/pypi/v/raglite-sqlite.svg)](https://pypi.org/project/raglite-SQLite/)
+
+[![PyPI](https://img.shields.io/pypi/v/raglite-sqlite.svg)](https://pypi.org/project/raglite-sqlite/)
 
 Local-first retrieval augmented generation toolkit built on SQLite. Raglite bundles
 ingestion, chunking, hybrid BM25/vector search, Typer CLI workflows, and a FastAPI
@@ -24,7 +26,7 @@ _On Windows use `\.venv\Scripts\activate` for step two._
 
 ## Installation
 
-Raglite is published as [`raglite-SQLite` on PyPI](https://pypi.org/project/raglite-SQLite/). Install the
+Raglite is published as [`raglite-sqlite` on PyPI](https://pypi.org/project/raglite-sqlite/). Install the
 core toolkit with:
 
 ```bash

@@ -1,9 +1,9 @@
-# raglite
+# raglite-SQLite
 
 [![CI](https://github.com/mmprotest/raglite-sqlite/actions/workflows/ci.yml/badge.svg)](https://github.com/mmprotest/raglite-sqlite/actions/workflows/ci.yml)
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python: 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)
-[![PyPI](https://img.shields.io/pypi/v/raglite.svg)](https://pypi.org/project/raglite/)
+[![PyPI](https://img.shields.io/pypi/v/raglite-sqlite.svg)](https://pypi.org/project/raglite-SQLite/)
 
 Local-first retrieval augmented generation toolkit built on SQLite. Raglite bundles
 ingestion, chunking, hybrid BM25/vector search, Typer CLI workflows, and a FastAPI
@@ -13,7 +13,7 @@ microservice. Everything runs on CPU and stores state in a single SQLite databas
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install "raglite[server]"
+pip install "raglite-sqlite[server]"
 raglite init-db --db demo.db
 raglite ingest --db demo.db --path demo/mini_corpus
 raglite query --db demo.db --text "quick start guide" --k 5 --alpha 0.6
@@ -24,24 +24,24 @@ _On Windows use `\.venv\Scripts\activate` for step two._
 
 ## Installation
 
-Raglite is published as [`raglite` on PyPI](https://pypi.org/project/raglite/). Install the
+Raglite is published as [`raglite-SQLite` on PyPI](https://pypi.org/project/raglite-SQLite/). Install the
 core toolkit with:
 
 ```bash
-pip install raglite
+pip install raglite-sqlite
 ```
 
 To enable the optional FastAPI server, install the `server` extra:
 
 ```bash
-pip install "raglite[server]"
+pip install "raglite-sqlite[server]"
 ```
 
 Development dependencies (linters, type checkers, packaging utilities) can be installed
 with the `dev` extra:
 
 ```bash
-pip install "raglite[dev]"
+pip install "raglite-sqlite[dev]"
 ```
 
 ## Features
@@ -150,7 +150,7 @@ triggers; see [`src/raglite/schema.sql`](src/raglite/schema.sql) for details.
 > - Best with a single writer; readers work fine with WAL mode. Remember to back up both
 >   `*.db` and `*.db-wal` files.
 > - Increase α to ≥0.6 when keyword precision matters; lower it or enable rerank (with
->   `raglite[rerank]`) for conversational questions.
+>   `raglite-sqlite[rerank]`) for conversational questions.
 > - Raglite is local-first—avoid ingesting secrets or PII. Use `.ragliteignore` patterns or
 >   preprocess files to filter sensitive content.
 

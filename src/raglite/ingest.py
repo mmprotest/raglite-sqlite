@@ -7,6 +7,7 @@ import os
 import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
+from types import ModuleType
 from typing import Iterator, List, Sequence, Tuple
 
 from . import chunk as chunk_utils
@@ -15,26 +16,35 @@ from .db import apply_migrations, connect
 from .embed import get_embedding_store
 
 try:
-    from readability import Document
+    import readability as _readability
 except Exception:  # pragma: no cover - optional dependency
-    Document = None
+    readability: ModuleType | None = None
+else:
+    readability = _readability
 
 try:
-    from bs4 import BeautifulSoup
+    import bs4 as _bs4
 except Exception:  # pragma: no cover - optional dependency
-    BeautifulSoup = None
+    bs4: ModuleType | None = None
+else:
+    bs4 = _bs4
 
 try:
-    from pypdf import PdfReader
+    import pypdf as _pypdf
 except Exception:  # pragma: no cover - optional dependency
-    PdfReader = None
+    pypdf: ModuleType | None = None
+else:
+    pypdf = _pypdf
 
 try:  # optional OCR
-    import pytesseract
-    from PIL import Image
+    import pytesseract as _pytesseract
+    from PIL import Image as _Image
 except Exception:  # pragma: no cover - optional dependency
-    pytesseract = None
-    Image = None
+    pytesseract: ModuleType | None = None
+    Image: ModuleType | None = None
+else:
+    pytesseract = _pytesseract
+    Image = _Image
 
 
 @dataclass
@@ -80,26 +90,23 @@ def read_text_file(path: Path) -> str:
 
 def read_html_file(path: Path) -> str:
     html = path.read_text(encoding="utf-8", errors="ignore")
-    if Document is None or BeautifulSoup is None:
+    if readability is None or bs4 is None:
         return html
-    doc = Document(html)
+    doc = readability.Document(html)
     summary = doc.summary()
-    soup = BeautifulSoup(summary, "html.parser")
+    soup = bs4.BeautifulSoup(summary, "html.parser")
     return soup.get_text(" ")
 
 
 def read_pdf_file(path: Path, *, ocr: bool = False) -> str:
-    if PdfReader is None:
+    if pypdf is None:
         raise UnsupportedDocument("pypdf is required to read PDF files")
-    reader = PdfReader(str(path))
+    reader = pypdf.PdfReader(str(path))
     texts: List[str] = []
     for page in reader.pages:
         text = page.extract_text() or ""
         if not text.strip() and ocr and pytesseract and Image:
-            try:
-                images = page.images
-            except AttributeError:  # pragma: no cover
-                images = []
+            images = list(getattr(page, "images", []))
             for image in images:
                 try:
                     img = Image.open(image.data)

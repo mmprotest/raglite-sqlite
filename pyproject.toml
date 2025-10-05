@@ -88,6 +88,8 @@ known_first_party = ["raglite"]
 
 [tool.ruff]
 line-length = 100
+
+[tool.ruff.lint]
 select = ["E", "F", "I", "B"]
 
 [tool.mypy]
